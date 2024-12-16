@@ -43,17 +43,29 @@
             </tbody>
           </template>
         </v-table>
+
+        <v-pagination
+          v-if="pagination.last_page > 1"
+          v-model="pagination.current_page"
+          :length="pagination.last_page"
+        />
       </v-card-text>
     </v-card>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import axiosInstance from '@/api/axiosInstance';
 
 const schedule = ref([]);
+const pagination = ref({
+  current_page: 0,
+  last_page: 0,
+  per_page: 0,
+  total: 0
+});
 const loading = ref(false);
 const error = ref('');
 const router = useRouter();
@@ -63,8 +75,9 @@ const fetchDoctorSchedule = async () => {
   error.value = '';
 
   try {
-    const response = await axiosInstance.get('/doctor/schedule');
-    schedule.value = Array.isArray(response.data) ? response.data : [];
+    const response = await axiosInstance.get(`/doctor/schedule?page=${pagination.value.current_page}`);
+    schedule.value = response.data.data;
+    pagination.value = response.data.meta;
   } catch (err) {
     error.value = err.response?.data?.message || 'Не вдалося отримати графік роботи.';
   } finally {
@@ -77,12 +90,17 @@ const goToDaySchedule = (dayId) => {
 };
 
 onMounted(() => {
+  pagination.value.current_page = +router.currentRoute.value.query.page || 1;
+  fetchDoctorSchedule();
+});
+
+watch(() => pagination.value.current_page, (newPage) => {
+  if (newPage > 1) {
+    router.push({ query: { page: newPage } });
+  } else {
+    router.push({ query: {} });
+  }
+
   fetchDoctorSchedule();
 });
 </script>
-
-<style>
-.cursor-pointer {
-  cursor: pointer;
-}
-</style>

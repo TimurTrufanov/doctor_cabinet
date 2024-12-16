@@ -22,20 +22,30 @@
 
         <div v-else>
           <p
-            v-if="specialization && specialization.name"
+            v-if="currentAppointment.specialization"
             class="mb-2"
           >
-            <strong>Спеціалізація:</strong> {{ specialization.name }}
+            <strong>Спеціалізація:</strong> {{ currentAppointment.specialization }}
           </p>
 
-          <p v-if="patient && patient.name">
-            <strong>Паціент:</strong> {{ patient.name }}
+          <p
+            v-if="currentAppointment.patient"
+            class="mb-2"
+          >
+            <strong>Паціент:</strong> {{ currentAppointment.patient }}
+          </p>
+
+          <p
+            v-if="currentAppointment.service"
+            class="mb-2"
+          >
+            <strong>Послуга, по якій записався пацієнт: </strong> {{ currentAppointment.service }}
           </p>
 
           <v-divider class="my-4" />
 
           <template v-if="isToday">
-            <template v-if="appointmentStatus === 'заплановано'">
+            <template v-if="currentAppointment.status === 'заплановано'">
               <v-btn
                 color="primary"
                 class="mx-2"
@@ -55,7 +65,7 @@
               <v-divider class="my-4" />
             </template>
 
-            <template v-if="appointmentStatus === 'прийшов'">
+            <template v-if="currentAppointment.status === 'прийшов'">
               <v-btn
                 color="primary"
                 class="mx-2"
@@ -94,7 +104,7 @@
                   v-for="record in appointment.records"
                   :key="record.id"
                 >
-                  <p><strong>Доктор:</strong> {{ record.doctor.first_name }} {{ record.doctor.last_name }}</p>
+                  <p><strong>Доктор:</strong> {{ record.doctor }}</p>
                   <p><strong>Дата:</strong> {{ record.date }}</p>
                   <p><strong>Історія хвороби:</strong> {{ record.medical_history }}</p>
                   <p><strong>Діагноз:</strong> {{ record.diagnosis }}</p>
@@ -280,7 +290,7 @@
           <v-date-picker
             v-if="selectedAnalysis"
             v-model="recommendedDate"
-            :min="appointmentDate"
+            :min="currentAppointment.date"
             title="Рекомендована дата сдачі"
             header="Введіть дату"
           />
@@ -447,10 +457,7 @@ const appointmentId = route.params.appointmentId;
 const appointments = ref([]);
 const pagination = ref({current_page: 1, last_page: 1});
 const records = ref([]);
-const appointmentDate = ref('');
-const appointmentStatus = ref('');
-const specialization = ref({});
-const patient = ref({});
+const currentAppointment = ref({});
 const loading = ref(false);
 const error = ref('');
 const showAddRecordDialog = ref(false);
@@ -482,7 +489,7 @@ const confirmDialogText = ref('');
 let confirmActionCallback = null;
 
 const isToday = computed(() => {
-  if (!appointmentDate.value) return false;
+  if (!currentAppointment.value.date) return false;
 
   const today = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Europe/Kiev',
@@ -491,7 +498,7 @@ const isToday = computed(() => {
     day: '2-digit',
   }).format(new Date());
 
-  return appointmentDate.value === today;
+  return currentAppointment.value.date === today;
 });
 
 const getStatusClass = computed(() => {
@@ -514,11 +521,10 @@ const fetchAppointments = async (page = 1) => {
       params: {page},
     });
 
-    specialization.value = response.data.specialization;
-    patient.value = response.data.patient;
+    console.log(response)
+
+    currentAppointment.value = response.data.current_appointment;
     appointments.value = response.data.appointments;
-    appointmentDate.value = response.data.appointment_date;
-    appointmentStatus.value = response.data.appointment_status;
     pagination.value = response.data.pagination;
   } catch (err) {
     error.value = err.response?.data?.message || 'Помилка при завантаженні даних.';
@@ -668,7 +674,7 @@ const removeService = (index) => {
 const updateAppointmentStatus = async (status) => {
   try {
     const response = await axiosInstance.patch(`/doctor/appointments/${appointmentId}/status`, {status});
-    appointmentStatus.value = response.data.status;
+    currentAppointment.value.status = response.data.status;
   } catch (err) {
     error.value = err.response?.data?.message || 'Помилка при оновленні статусу.';
   }

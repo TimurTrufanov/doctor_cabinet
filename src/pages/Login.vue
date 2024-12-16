@@ -52,34 +52,27 @@
   </v-container>
 </template>
 
-<script>
-import {useRouter} from 'vue-router';
+<script setup>
+import { useRouter } from 'vue-router';
 import axiosInstance from '@/api/axiosInstance';
-import {ref, computed} from 'vue';
+import { ref, computed } from 'vue';
 
-export default {
-  name: 'Login',
-  setup() {
-    const router = useRouter();
-    const email = ref('');
-    const password = ref('');
-    const errorMessage = ref('');
+const router = useRouter();
+const email = ref('');
+const password = ref('');
+const errorMessage = ref('');
 
-    const isEmailValid = computed(() => email.value.includes('@'));
-    const isPasswordValid = computed(() => password.value.length < 160);
+const isEmailValid = computed(() => email.value.includes('@'));
+const isPasswordValid = computed(() => password.value.length < 160);
 
-    const submitLogin = async () => {
-      try {
-        const response = await axiosInstance.post('/doctor/login', {email: email.value, password: password.value});
-        localStorage.setItem('doctorToken', response.data.token);
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        await router.push({name: 'DoctorDashboard'});
-      } catch {
-        errorMessage.value = 'Невірні дані для входу';
-      }
-    };
-
-    return {email, password, isEmailValid, isPasswordValid, submitLogin, errorMessage};
-  },
+const submitLogin = async () => {
+  try {
+    const response = await axiosInstance.post('/doctor/login', { email: email.value, password: password.value });
+    localStorage.setItem('doctorToken', response.data.token);
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+    await router.push({ name: 'DoctorDashboard' });
+  } catch {
+    errorMessage.value = 'Невірні дані для входу';
+  }
 };
 </script>

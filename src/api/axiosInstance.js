@@ -21,9 +21,8 @@ axiosInstance.interceptors.request.use((config) => {
 
 axiosInstance.interceptors.response.use((response) => response,   (error) => {
     if (error.response && error.response.status === 401) {
-      if (error.config.url !== '/login') {
+      if (error.config.url !== '/') {
         localStorage.removeItem('doctorToken');
-        window.location.href = '/';
       }
     }
     return Promise.reject(error);

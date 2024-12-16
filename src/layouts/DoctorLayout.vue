@@ -2,7 +2,7 @@
   <v-app>
     <v-app-bar app>
       <v-toolbar-title>Кабінет лікаря</v-toolbar-title>
-      <v-spacer/>
+      <v-spacer />
       <v-avatar
         v-if="doctorPhoto"
         class="mr-3 cursor-pointer"
@@ -22,7 +22,7 @@
           @click="navigate(item.route)"
         >
           <template #prepend>
-            <v-icon :icon="item.icon"/>
+            <v-icon :icon="item.icon" />
           </template>
           <v-list-item-title>{{ item.title }}</v-list-item-title>
         </v-list-item>
@@ -34,45 +34,38 @@
   </v-app>
 </template>
 
-<script>
-import {useRouter} from 'vue-router';
-import {useDoctorStore} from '@/stores/doctorStore';
-import {computed, onMounted} from 'vue';
+<script setup>
+import { useRouter } from 'vue-router';
+import { useDoctorStore } from '@/stores/doctorStore';
+import { computed, onMounted } from 'vue';
 
-export default {
-  name: 'DoctorLayout',
-  setup() {
-    const router = useRouter();
-    const doctorStore = useDoctorStore();
+const router = useRouter();
+const doctorStore = useDoctorStore();
 
-    onMounted(() => {
-      if (!doctorStore.doctorDetails) {
-        doctorStore.fetchDoctorDetails();
-      }
-    });
+const doctorPhoto = computed(() => doctorStore.doctorDetails?.photo);
 
-    const doctorPhoto = computed(() => doctorStore.doctorDetails?.photo);
+const menuItems = [
+  { title: 'Головна', icon: 'mdi-home', route: '/doctor' },
+  { title: 'Розклад', icon: 'mdi-calendar', route: '/doctor/schedule' },
+];
 
-    const menuItems = [
-      {title: 'Головна', icon: 'mdi-home', route: '/doctor'},
-      {title: 'Розклад', icon: 'mdi-calendar', route: '/doctor/schedule'},
-    ];
-
-    const navigate = (route) => {
-      router.push(route);
-    };
-
-    const goToDetails = () => {
-      router.push({name: 'DoctorDetails'});
-    };
-
-    const logout = () => {
-      doctorStore.clearDoctorDetails();
-      localStorage.removeItem('doctorToken');
-      router.push({name: 'Login'});
-    };
-
-    return {menuItems, navigate, goToDetails, logout, doctorPhoto};
-  },
+const navigate = (route) => {
+  router.push(route);
 };
+
+const goToDetails = () => {
+  router.push({ name: 'DoctorDetails' });
+};
+
+const logout = () => {
+  doctorStore.clearDoctorDetails();
+  localStorage.removeItem('doctorToken');
+  router.push({ name: 'Login' });
+};
+
+onMounted(() => {
+  if (!doctorStore.doctorDetails) {
+    doctorStore.fetchDoctorDetails();
+  }
+});
 </script>

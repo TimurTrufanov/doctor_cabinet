@@ -77,20 +77,11 @@
   </v-container>
 </template>
 
-<script>
-import {useDoctorStore} from '@/stores/doctorStore';
-import {computed} from 'vue';
+<script setup>
+import { useDoctorStore } from '@/stores/doctorStore';
+import { computed } from 'vue';
 
-export default {
-  name: 'DoctorDetails',
-  setup() {
-    const doctorStore = useDoctorStore();
+const doctorStore = useDoctorStore();
 
-    const doctorDetails = computed(() => doctorStore.doctorDetails);
-
-    return {
-      doctorDetails,
-    };
-  },
-};
+const doctorDetails = computed(() => doctorStore.doctorDetails);
 </script>
